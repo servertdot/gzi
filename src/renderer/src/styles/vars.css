@@ -1,0 +1,10 @@
+:root {
+  --base-accent: #D36135;
+  --base-black: #000000;
+  /* --base-black: #0e0e0e; */
+  --base-gray: #999999;
+  --base-white: #ffffff;
+
+  --green-light-color: #9EC884;
+  --yelow-light-color: #EAF09A
+}

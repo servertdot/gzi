@@ -12,14 +12,12 @@
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "start": "electron-vite preview",
     "dev": "electron-vite dev --watch",
-    "build": "electron-vite build",
+    "build": "npm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux",
-    "pack": "build --dir",
-    "dist": "electron-builder"
+    "build:linux": "npm run build && electron-builder --linux"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
@@ -33,11 +31,12 @@
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@lukeed/uuid": "^2.0.1",
     "@rushstack/eslint-patch": "^1.7.1",
+    "@stylistic/eslint-plugin-js": "^1.7.0",
     "@types/node": "^18.19.9",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@vitejs/plugin-vue": "^5.0.3",
     "@vue/eslint-config-prettier": "^9.0.0",
-    "@vue/eslint-config-typescript": "^12.0.0",
+    "@vue/eslint-config-typescript": "^13.0.0",
     "electron": "^28.2.0",
     "electron-builder": "^24.13.3",
     "electron-vite": "^2.0.0",
@@ -52,39 +51,5 @@
     "vite": "^5.0.12",
     "vue": "^3.4.15",
     "vue-tsc": "^1.8.27"
-  },
-  "build": {
-    "appId": "dot.gzi",
-    "productName": "gzi",
-    "directories": {
-      "buildResources": "build"
-    },
-    "mac": {
-      "hardenedRuntime": true,
-      "entitlements": "./build/entitlements.mac.plist",
-      "entitlementsInherit": "./build/entitlements.mac.plist",
-      "gatekeeperAssess": false,
-      "category": "public.app-category.developer-tools",
-      "icon": "build/icon.icns",
-      "target": [
-        {
-          "target": "zip",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        }
-      ]
-    },
-    "win": {
-      "target": "nsis"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    },
-    "linux": {
-      "target": "AppImage"
-    }  
   }
 }

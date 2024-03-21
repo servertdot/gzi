@@ -1,5 +1,6 @@
-import { createApp } from 'vue'
-import './styles/styles.css'
-import App from './App.vue'
+import { createApp } from 'vue';
+import App from './App.vue';
+import './styles/styles.css';
 
-createApp(App).mount('#app')
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+createApp(App).mount('#app');

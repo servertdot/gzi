@@ -1,49 +1,49 @@
 <script lang="ts" setup>
-  import { onMounted, onUnmounted, ref } from 'vue';
-  import { selectedChatId, isShowChatsModal, chats, isSettingsOpen } from '../store';
-  import SettingsIcon from './settings/SettingsIcon.vue';
+    import { type VNodeRef, onMounted, onUnmounted, ref } from 'vue';
+    import { selectedChatId, isShowChatsModal, chats, isSettingsOpen } from '../../store';
+    import SettingsIcon from '../../assets/icons/SettingsIcon.vue';
 
-  const chatModalRef = ref();
+    const chatModalRef = ref<VNodeRef>();
 
-  const handleClickOutside = (event: MouseEvent) => {
-    if (chatModalRef.value && !chatModalRef.value.contains(event.target as Node)) {
-      isShowChatsModal.value = false
-    }
-  }
+    const handleClickOutside = (event: MouseEvent): void => {
+        // @ts-expect-error
+        if (chatModalRef.value && !chatModalRef.value.contains(event.target as Node)) {
+            isShowChatsModal.value = false;
+        }
+    };
 
-  const handleOpenSettings = () => {
-    isShowChatsModal.value = false;
-    isSettingsOpen.value = true;
-  }
+    const handleOpenSettings = (): void => {
+        isShowChatsModal.value = false;
+        isSettingsOpen.value = true;
+    };
 
-  const keyboardListener = (event: KeyboardEvent) => {
-    if (event.key === 'Escape' && isShowChatsModal.value) {
-      isShowChatsModal.value = false
-    }
-  }
+    const keyboardListener = (event: KeyboardEvent): void => {
+        if (event.key === 'Escape' && isShowChatsModal.value) {
+            isShowChatsModal.value = false;
+        }
+    };
 
-  onMounted(() => {
-    document.addEventListener('keydown', keyboardListener)
-  })
+    onMounted(() => {
+        document.addEventListener('keydown', keyboardListener);
+    });
 
-  onUnmounted(() => {
-    document.removeEventListener('keydown', keyboardListener)
-  })
-
-
+    onUnmounted(() => {
+        document.removeEventListener('keydown', keyboardListener);
+    });
 </script>
 
 <template>
   <div class="chat-list-modal" @click="handleClickOutside">
     <div class="chat-list" ref="chatModalRef">
     <div class="chat-list__wrapper">
-      <div 
-        class="chat-list__item" 
+      <div
+        class="chat-list__item"
         v-for="chat in chats"
+        :key="chat.id"
         :class="{ 'selected': chat.id === selectedChatId }"
         @click="() => selectedChatId = chat.id"
       >
-        {{ chat.title }}
+        {{ chat.title || chat.url }}
       </div>
     </div>
 
@@ -75,11 +75,8 @@
     height: 300px;
     transform: translate(-50%, 0);
     border-radius: 8px;
-    /* box-shadow: 0 0 2px var(--base-black); */
-
     border: 1px solid #E4E4E7;
     box-shadow: 0px 1px 2px 0px #1018280D;
-
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -97,7 +94,6 @@
   .chat-list__item {
     margin-bottom: 8px;
     padding: 8px;
-    border-bottom: 1px solid var(--base-black);
     color: var(--base-black)
   }
 
@@ -115,6 +111,7 @@
     align-items: center;
     justify-content: center;
   }
+
   .settings__button:hover {
     color: var(--base-accent);
   }

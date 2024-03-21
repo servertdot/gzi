@@ -1,84 +1,80 @@
 <script lang="ts" setup>
-  import { effect, onMounted, onUnmounted, ref } from 'vue';
-  import { Chat } from '../../assets/types';
-  import { chats, isCreating } from '../../store'
-  import { handleRemoveChat } from '../../store/utils';
+    import { effect, onMounted, onUnmounted, ref } from 'vue';
+    import { chats, isCreating } from '../../store';
+    import { handleRemoveChat, updateChatInStorage } from '../../store/utils';
+    import { type ChatItemProps } from './types';
 
-  const props = defineProps<{
-    chat: Chat,
-    isSelected: boolean;
-    isFocused: boolean;
-    updateSelectedId: (id:number | string) => void;
-    updateFocusableId: (id:number | string) => void;
-    id: string | number;
-    tabIndex: number;
-  }>();
+    const props = defineProps<ChatItemProps>();
 
-  const inputRef = ref();
-  const block = ref();
-  const activeBlock = ref();
+    const inputRef = ref();
+    const block = ref();
+    const activeBlock = ref();
 
-  const updateChatTitle = () => {
-    const chat = chats.value.find((chat) => chat.id === props.chat.id)!;
-    chat.title = inputRef.value.value;
+    const updateChatTitle = (): void => {
+        const chat = chats.value.find((chat) => chat.id === props.chat.id);
 
-    if (!chat.title && !chat.url) {
-      handleRemoveChat(props.chat.id)
-    }
-    if (isCreating.value) {
-      isCreating.value = false
-    }
-    props.updateSelectedId(0);
-    props.updateFocusableId(0);
-  }
+        if (!chat) {
+            return;
+        }
 
-  const onClickOutside = (event: MouseEvent) => {
-    if (inputRef.value && !inputRef.value.contains(event.target as Node)) {
-      updateChatTitle()
-    }
-  };
-
-  effect(() => {
-    document.removeEventListener('click', onClickOutside)
-    if (inputRef.value && props.isSelected) {
-      inputRef.value.focus();
-    }
-  })
-
-  const onEscape = (event: KeyboardEvent) => {
-    if (event.key === 'Enter' && props.isSelected) {
-      updateChatTitle()
-    }
-
-    if (event.key === 'Escape' && props.isSelected) {
-      updateChatTitle();
-    }
-  }
-
-  const handleRemove = (e: KeyboardEvent) => {
-    if (!props.isSelected && props.isFocused) {
-      if (e.metaKey && e.code === 'Backspace') {
-        handleRemoveChat(props.chat.id);
+        updateChatInStorage(chat);
+        if (!chat.title && !chat.url) {
+            handleRemoveChat(props.chat.id);
+        }
+        if (isCreating.value) {
+            isCreating.value = false;
+        }
+        props.updateSelectedId(0);
         props.updateFocusableId(0);
-      }
-    }
-  }
+    };
 
-  effect(() => {
-    document.removeEventListener('keydown', onEscape)
-    if (props.isSelected) {
-      document.addEventListener('keydown', onEscape);
-    }
-  })
+    const onClickOutside = (event: MouseEvent) => {
+        if (inputRef.value && !inputRef.value.contains(event.target as Node)) {
+            updateChatTitle();
+        }
+    };
 
-  onMounted(() => {
-    document.addEventListener('keydown', handleRemove)
-  })
+    effect(() => {
+        document.removeEventListener('click', onClickOutside);
+        if (inputRef.value && props.isSelected) {
+            inputRef.value.focus();
+        }
+    });
 
-  onUnmounted(() => {
-    document.removeEventListener('keydown', onEscape);
-    document.removeEventListener('keydown', handleRemove)
-  })
+    const onEscape = (event: KeyboardEvent) => {
+        if (event.key === 'Enter' && props.isSelected) {
+            updateChatTitle();
+        }
+
+        if (event.key === 'Escape' && props.isSelected) {
+            updateChatTitle();
+        }
+    };
+
+    const handleRemove = (e: KeyboardEvent) => {
+        if (!props.isSelected && props.isFocused) {
+            if (e.metaKey && e.code === 'Backspace') {
+                handleRemoveChat(props.chat.id);
+                props.updateFocusableId(0);
+            }
+        }
+    };
+
+    effect(() => {
+        document.removeEventListener('keydown', onEscape);
+        if (props.isSelected) {
+            document.addEventListener('keydown', onEscape);
+        }
+    });
+
+    onMounted(() => {
+        document.addEventListener('keydown', handleRemove);
+    });
+
+    onUnmounted(() => {
+        document.removeEventListener('keydown', onEscape);
+        document.removeEventListener('keydown', handleRemove);
+    });
 
 </script>
 
@@ -97,19 +93,19 @@
   >
     {{ chat.title || chat.url }}
   </div>
-  <div 
-    @click="() => updateFocusableId(chat.id)" 
-    class="chat-item_active"  
-    ref="activeBlock" 
+  <div
+    @click="() => updateFocusableId(chat.id)"
+    class="chat-item_active"
+    ref="activeBlock"
     v-if="isSelected"
   >
-    <input 
+    <input
       ref="inputRef"
       class="chat-item__input"
       v-model="chat.title"
       placeholder="Enter title"
     />
-    <input 
+    <input
       class="chat-item__input"
       v-model="chat.url"
       placeholder="Enter url"
@@ -120,8 +116,6 @@
 <style scoped>
   .chat-item {
     padding: 4px 8px;
-    /* padding: 16px 12px; */
-    /* border-bottom: 1px solid transparent; */
     transition: border .1s;
     border: 1px solid transparent;
   }

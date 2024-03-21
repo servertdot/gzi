@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { Hotkey } from './types';
+    import { type Hotkey } from './types';
 
-  const props = defineProps<{
-    hotkey: Hotkey
-  }>()
+    defineProps<{
+        hotkey: Hotkey
+    }>();
 </script>
 
 <template>
@@ -15,8 +15,6 @@ import { Hotkey } from './types';
 
 <style scoped>
   .hotkey-wrapper {
-    /* display: flex;
-    justify-content: space-between; */
     align-items: center;
 
     display: grid;

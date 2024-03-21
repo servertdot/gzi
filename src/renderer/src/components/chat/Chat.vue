@@ -1,18 +1,16 @@
 <script lang="ts" setup>
-  import { computed, effect, ref } from 'vue'
-  import { selectedChatId, isShowChatsModal, chats } from '../store'
-  import ChatsModal from './ChatsModal.vue';
+    import { computed, ref } from 'vue';
+    import { selectedChatId, isShowChatsModal, chats } from '../../store';
+    import ChatsModal from './ChatsModal.vue';
 
-  const selectedChat = computed(() => chats.value[selectedChatId.value - 1]);
-  const webviewRef = ref();
-
-  // webviewRef.value && webviewRef.value.executeJavaScript(`var a = 'foo'; console.log(a);`)
-
+    const webviewRef = ref();
+    const selectedChat = computed(() => chats.value.find(item => item.id === selectedChatId.value));
 </script>
 
 <template>
   <div class="chat">
     <webview
+      v-if="selectedChat"
       id="webview"
       ref="webviewRef"
       :key="selectedChat.id"

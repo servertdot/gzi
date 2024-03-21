@@ -1,92 +1,86 @@
 <script lang="ts" setup>
-  import { onMounted, onUnmounted, ref } from 'vue';
-  import { v4 as uuid } from '@lukeed/uuid'
-  import { isSettingsOpen, chats, isCreating } from '../../store'
-  import ChatItem from './ChatItem.vue';
-  import Button from '../Button.vue';
-  import { Chat } from '../../assets/types';
-  import { handleRemoveChat } from '../../store/utils';
-  import { SETTINGS_TABS, HOTKEYS } from './constants';
-  import { PreferencesType } from './types';
-  import Hotkey from './Hotkey.vue';
+    import { onMounted, onUnmounted, ref } from 'vue';
+    import { isSettingsOpen, chats, isCreating } from '../../store';
+    import { addNewChat, handleRemoveChat, updateChatInStorage } from '../../store/utils';
+    import { SETTINGS_TABS, HOTKEYS } from './constants';
+    import { type PreferencesType } from './types';
+    import Hotkey from './Hotkey.vue';
+    import ChatItem from './ChatItem.vue';
+    import Button from '../shared/Button.vue';
 
-  const activeSettingTab = ref<PreferencesType>('chat');
-  const selectedId = ref<string | number>(0);
-  const focusableId = ref<string | number>(0)
+    const activeSettingTab = ref<PreferencesType>('chat');
+    const selectedId = ref<string | number>(0);
+    const focusableId = ref<string | number>(0);
 
-  const updateSelectedId = (id: number | string) => {
-    selectedId.value = id;
-  }
-
-  const updateFocusableId = (id: number | string) => {
-    focusableId.value = id;
-  }
-
-
-  const onCreateChat = () => {
-    if (isCreating.value) return;
-    const newChat: Chat = {
-      id: uuid(),
-      title: '',
-      url: '',
-      status: 'done'
+    const updateSelectedId = (id: number | string): void => {
+        selectedId.value = id;
     };
 
-    chats.value.push(newChat);
-    updateSelectedId(newChat.id);
-    updateFocusableId(newChat.id);
-    isCreating.value = true;
-  }
+    const updateFocusableId = (id: number | string): void => {
+        focusableId.value = id;
+    };
 
-  const click = (e: MouseEvent) => {
-    if (!selectedId) return;
-    if (e.target?.id === 'wrapper' || e.target?.id === 'content-wrapper') {
-     
-      isCreating.value = false;
+    const onCreateChat = (): void => {
+        if (isCreating.value) return;
+        const newChat = addNewChat();
+        updateSelectedId(newChat.id);
+        updateFocusableId(newChat.id);
+        isCreating.value = true;
+    };
 
-      const chat = chats.value.find((chat) => chat.id === selectedId.value)!;
-      if (chat && !chat.title && !chat.url) {
-        handleRemoveChat(selectedId.value)
-      }
+    const click = (e: MouseEvent): void => {
+        if (!selectedId.value) return;
 
-      updateSelectedId(0);
-      updateFocusableId(0);
-    }
-  }
+        const target = e.target as HTMLElement;
+        if (target?.id === 'wrapper' || target?.id === 'content-wrapper') {
+            isCreating.value = false;
+            const chat = chats.value.find((chat) => chat.id === selectedId.value);
 
-  const keyboardListener = (event: KeyboardEvent) => {
-     if (event.key === 'Escape' && !selectedId.value && isSettingsOpen.value) {
-      isSettingsOpen.value = false;
-    }
-    if (event.metaKey && event.code === 'KeyN') {
-      onCreateChat();
-    }
-  }
-  
-  onMounted(() => {
-    document.addEventListener('keydown', keyboardListener)
-    document.addEventListener('click', click)
-  })
+            if (!chat) {
+                return;
+            }
 
-  onUnmounted(() => {
-    document.removeEventListener('keydown', keyboardListener)
-    document.removeEventListener('click', click)
-  })
+            updateChatInStorage(chat);
 
+            if (chat && !chat.title && !chat.url) {
+                handleRemoveChat(selectedId.value);
+            }
 
-</script> 
+            updateSelectedId(0);
+            updateFocusableId(0);
+        }
+    };
+
+    const keyboardListener = (event: KeyboardEvent) => {
+        if (event.key === 'Escape' && !selectedId.value && isSettingsOpen.value) {
+            isSettingsOpen.value = false;
+        }
+        if (event.metaKey && event.code === 'KeyN') {
+            onCreateChat();
+        }
+    };
+
+    onMounted(() => {
+        document.addEventListener('keydown', keyboardListener);
+        document.addEventListener('click', click);
+    });
+
+    onUnmounted(() => {
+        document.removeEventListener('keydown', keyboardListener);
+        document.removeEventListener('click', click);
+    });
+</script>
 
 <template>
   <div class="settings">
-    <!-- <button @click="() => isSettingsOpen = false" class="settings-back-button">Back</button> -->
     <div class="settings-wrapper" id="wrapper">
       <div class="settings-menu">
         <Button
-          v-for="tab in SETTINGS_TABS" 
+          v-for="tab in SETTINGS_TABS"
           :key="tab.id"
           class="settings-menu__item"
           :id="tab.id === 1 ? 'first' : 'second'"
-          :class="{ 
+          :class="{
             'settings-menu__item_active': activeSettingTab === tab.type,
           }"
           @click="activeSettingTab = tab.type"
@@ -97,10 +91,10 @@
 
       <div v-if="activeSettingTab === 'chat'" class="settings-content chat" id="content-wrapper">
         <ChatItem
-          v-for="(chat, index) in chats" 
+          v-for="(chat, index) in chats"
           :id="chat.id"
           :key="chat.id"
-          :chat="chat" 
+          :chat="chat"
           :isSelected="chat.id === selectedId"
           :isFocused="chat.id === focusableId"
           :tabIndex="index + 1"
@@ -110,12 +104,12 @@
       </div>
 
       <div v-if="activeSettingTab === 'settings'" class="settings-content settings-tab">
-        <Hotkey v-for="hotkey in HOTKEYS" :hotkey="hotkey" />
+        <Hotkey v-for="hotkey in HOTKEYS" :key="hotkey.id" :hotkey="hotkey" />
       </div>
 
       <div class="settings-buttons">
         <Button class="settings-button_create" v-if="activeSettingTab === 'chat'" :onClick="onCreateChat">New chat</Button>
-        <Button class="settings-button_back" :onClick="() => isSettingsOpen = false">Back</Button>
+        <Button class='settings-button_back' :onClick="() => isSettingsOpen = false">Back</Button>
       </div>
     </div>
   </div>
